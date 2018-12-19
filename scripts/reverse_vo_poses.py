@@ -48,7 +48,7 @@ elif args.dataset == '7Scenes':
                    n.find('pose') >= 0]
     gt_poses = [np.loadtxt(osp.join(seq_dir, 'frame-{:06d}.pose.txt'.
                                     format(i))).flatten()[:12] for i in
-                xrange(len(p_filenames))]
+                range(len(p_filenames))]
     N = len(gt_poses)
 
     # reverse poses
@@ -69,4 +69,4 @@ out_data = np.hstack((frame_idx[order, np.newaxis], real_poses[order]))
 # out_filename = real_pose_filename[:-4] + '_reversed' + real_pose_filename[-4:]
 out_filename = real_pose_filename
 np.savetxt(out_filename, out_data, fmt=fmt)
-print '{:s} saved'.format(out_filename)
+print('{:s} saved'.format(out_filename))

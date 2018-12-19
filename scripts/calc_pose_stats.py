@@ -34,4 +34,4 @@ elif args.dataset == 'RobotCar':
 else:
     raise NotImplementedError
 
-print 'Done'
+print('Done')

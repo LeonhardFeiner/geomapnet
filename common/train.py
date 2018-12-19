@@ -28,7 +28,7 @@ def load_state_dict(model, state_dict):
     :return: loaded model
     """
     model_names = [n for n, _ in model.named_parameters()]
-    state_names = [n for n in state_dict.keys()]
+    state_names = [n for n in list(state_dict.keys())]
 
     # find prefix for the model and state dicts from the first param name
     if model_names[0].find(state_names[0]) >= 0:
@@ -38,13 +38,13 @@ def load_state_dict(model, state_dict):
         state_prefix = state_names[0].replace(model_names[0], '')
         model_prefix = None
     else:
-        print 'Could not find the correct prefixes between {:s} and {:s}'.\
-            format(model_names[0], state_names[0])
+        print('Could not find the correct prefixes between {:s} and {:s}'.\
+            format(model_names[0], state_names[0]))
         raise KeyError
 
     from collections import OrderedDict
     new_state_dict = OrderedDict()
-    for k, v in state_dict.items():
+    for k, v in list(state_dict.items()):
         if state_prefix is None:
             k = model_prefix + k
         else:
@@ -60,7 +60,7 @@ def safe_collate(batch):
     :param batch: minibatch
     :return: minibatch filtered for None's
     """
-    batch = filter(lambda x: x is not None, batch)
+    batch = [x for x in batch if x is not None]
     return default_collate(batch)
 
 
@@ -138,24 +138,24 @@ class Trainer(object):
             if self.n_criterion_params:
                 self.criterion_param_win = 'cparam_win'
                 self.vis.line(X=np.zeros((1, self.n_criterion_params)),
-                              Y=np.asarray(criterion_params.values())[
+                              Y=np.asarray(list(criterion_params.values()))[
                     np.newaxis, :],
                     win=self.criterion_param_win, env=self.vis_env,
-                    opts={'legend': criterion_params.keys(),
+                    opts={'legend': list(criterion_params.keys()),
                           'xlabel': 'epochs', 'ylabel': 'value'})
 
         logfile = osp.join(self.logdir, 'log.txt')
         stdout = Logger.Logger(logfile)
-        print 'Logging to {:s}'.format(logfile)
+        print('Logging to {:s}'.format(logfile))
         sys.stdout = stdout
 
         # log all the command line options
-        print '---------------------------------------'
-        print 'Experiment: {:s}'.format(self.experiment)
-        for k, v in self.config.items():
-            print '{:s}: {:s}'.format(k, str(v))
-        print 'Using GPU {:s} / {:d}'.format(device, torch.cuda.device_count())
-        print '---------------------------------------'
+        print('---------------------------------------')
+        print('Experiment: {:s}'.format(self.experiment))
+        for k, v in list(self.config.items()):
+            print('{:s}: {:s}'.format(k, str(v)))
+        print('Using GPU {:s} / {:d}'.format(device, torch.cuda.device_count()))
+        print('---------------------------------------')
 
         # set random seed
         torch.manual_seed(self.config['seed'])
@@ -179,8 +179,8 @@ class Trainer(object):
                                        if not k in c_state}
                         c_state.update(append_dict)
                         self.train_criterion.load_state_dict(c_state)
-                print 'Loaded checkpoint {:s} epoch {:d}'.format(checkpoint_file,
-                                                                 checkpoint['epoch'])
+                print('Loaded checkpoint {:s} epoch {:d}'.format(checkpoint_file,
+                                                                 checkpoint['epoch']))
 
         self.train_loader = torch.utils.data.DataLoader(train_dataset,
                                                         batch_size=self.config['batch_size'], shuffle=self.config['shuffle'],
@@ -214,7 +214,7 @@ class Trainer(object):
         :param lstm: whether the model is an LSTM
         :return:
         """
-        for epoch in xrange(self.start_epoch, self.config['n_epochs']):
+        for epoch in range(self.start_epoch, self.config['n_epochs']):
             # VALIDATION
             if self.config['do_val'] and ((epoch % self.config['val_freq'] == 0) or
                                           (epoch == self.config['n_epochs'] - 1)):
@@ -239,21 +239,21 @@ class Trainer(object):
                     val_batch_time.update(time.time() - end)
 
                     if batch_idx % self.config['print_freq'] == 0:
-                        print 'Val {:s}: Epoch {:d}\t' \
+                        print('Val {:s}: Epoch {:d}\t' \
                               'Batch {:d}/{:d}\t' \
                               'Data time {:.4f} ({:.4f})\t' \
                               'Batch time {:.4f} ({:.4f})\t' \
                               'Loss {:f}' \
                             .format(self.experiment, epoch, batch_idx, len(self.val_loader) - 1,
                                     val_data_time.val, val_data_time.avg, val_batch_time.val,
-                                    val_batch_time.avg, loss)
+                                    val_batch_time.avg, loss))
                         if self.config['log_visdom']:
                             self.vis.save(envs=[self.vis_env])
 
                     end = time.time()
 
-                print 'Val {:s}: Epoch {:d}, val_loss {:f}'.format(self.experiment,
-                                                                   epoch, val_loss.avg)
+                print('Val {:s}: Epoch {:d}, val_loss {:f}'.format(self.experiment,
+                                                                   epoch, val_loss.avg))
 
                 if self.config['log_visdom']:
                     self.vis.updateTrace(X=np.asarray([epoch]),
@@ -264,8 +264,8 @@ class Trainer(object):
             # SAVE CHECKPOINT
             if epoch % self.config['snapshot'] == 0:
                 self.save_checkpoint(epoch)
-                print 'Epoch {:d} checkpoint saved for {:s}'.\
-                    format(epoch, self.experiment)
+                print('Epoch {:d} checkpoint saved for {:s}'.\
+                    format(epoch, self.experiment))
 
             # ADJUST LR
             lr = self.optimizer.adjust_lr(epoch)
@@ -296,7 +296,7 @@ class Trainer(object):
                 if batch_idx % self.config['print_freq'] == 0:
                     n_iter = epoch * len(self.train_loader) + batch_idx
                     epoch_count = float(n_iter) / len(self.train_loader)
-                    print 'Train {:s}: Epoch {:d}\t' \
+                    print('Train {:s}: Epoch {:d}\t' \
                           'Batch {:d}/{:d}\t' \
                           'Data Time {:.4f} ({:.4f})\t' \
                           'Batch Time {:.4f} ({:.4f})\t' \
@@ -304,7 +304,7 @@ class Trainer(object):
                           'lr: {:f}'.\
                         format(self.experiment, epoch, batch_idx, len(self.train_loader) - 1,
                                train_data_time.val, train_data_time.avg, train_batch_time.val,
-                               train_batch_time.avg, loss, lr)
+                               train_batch_time.avg, loss, lr))
                     if self.config['log_visdom']:
                         self.vis.updateTrace(X=np.asarray([epoch_count]),
                                              Y=np.asarray([loss]), win=self.loss_win, name='train_loss',
@@ -322,7 +322,7 @@ class Trainer(object):
         # Save final checkpoint
         epoch = self.config['n_epochs']
         self.save_checkpoint(epoch)
-        print 'Epoch {:d} checkpoint saved'.format(epoch)
+        print('Epoch {:d} checkpoint saved'.format(epoch))
         if self.config['log_visdom']:
             self.vis.save(envs=[self.vis_env])
 
@@ -400,16 +400,16 @@ def step_lstm(data, model, cuda, target=None, criterion=None, optim=None,
 
     loss_accum = 0
     b_start = np.random.randint(N % B + 1)
-    for b in xrange(N / B):
-        b_idx = b_start + torch.LongTensor(xrange(b * B, (b + 1) * B))
+    for b in range(N / B):
+        b_idx = b_start + torch.LongTensor(range(b * B, (b + 1) * B))
         xb = torch.index_select(data_var, dim=0, index=Variable(b_idx))
         if target is not None:
             tb = torch.index_select(
                 target, dim=0, index=Variable(b_idx).cuda())
         model.reset_hidden_states(B)
         g_start = np.random.randint(T % G + 1)
-        for g in xrange(T / G):
-            g_idx = g_start + torch.LongTensor(xrange(g * G, (g + 1) * G))
+        for g in range(T / G):
+            g_idx = g_start + torch.LongTensor(range(g * G, (g + 1) * G))
             xg = torch.index_select(xb, dim=1, index=Variable(g_idx))
             if target is not None:
                 tg = torch.index_select(

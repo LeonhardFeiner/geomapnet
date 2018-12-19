@@ -50,7 +50,7 @@ settings = configparser.ConfigParser()
 with open(args.config_file, 'r') as f:
     settings.read_file(f)
 section = settings['optimization']
-optim_config = {k: json.loads(v) for k, v in section.items() if k != 'opt'}
+optim_config = {k: json.loads(v) for k, v in list(section.items()) if k != 'opt'}
 opt_method = section['opt']
 lr = optim_config.pop('lr')
 weight_decay = optim_config.pop('weight_decay')
@@ -69,7 +69,7 @@ if args.model.find('mapnet') >= 0:
     steps = section.getint('steps')
 if args.model.find('++') >= 0:
     vo_lib = section.get('vo_lib', 'orbslam')
-    print 'Using {:s} VO'.format(vo_lib)
+    print('Using {:s} VO'.format(vo_lib))
 
 section = settings['training']
 seed = section.getint('seed')
@@ -123,7 +123,7 @@ crop_size = tuple(np.loadtxt(crop_size_file).astype(np.int))
 tforms = [transforms.Resize(256)]
 if color_jitter > 0:
     assert color_jitter <= 1.0
-    print 'Using ColorJitter data augmentation'
+    print('Using ColorJitter data augmentation')
     tforms.append(transforms.ColorJitter(brightness=color_jitter,
                                          contrast=color_jitter, saturation=color_jitter, hue=color_jitter / 2))
 tforms.append(transforms.ToTensor())

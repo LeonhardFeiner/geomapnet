@@ -18,8 +18,8 @@ def start_server(logdir, port):
     """
     with patch.object(sys, 'argv', ['visdom.server', '-port', '{:d}'.format(port),
                                     '-env_path', '{:s}/'.format(logdir)]):
-        print 'Running the Visdom server with logdir={:s} on port {:d}'.\
-            format(logdir, port)
+        print('Running the Visdom server with logdir={:s} on port {:d}'.\
+            format(logdir, port))
         log_filename = osp.join(logdir, 'visdom_log.txt')
         with open(log_filename, 'w') as sys.stderr:
             run_module('visdom.server', run_name='__main__')

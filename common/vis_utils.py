@@ -55,10 +55,10 @@ def vis_tsne(embedding, images, ax=None):
 
 
 if __name__ == '__main__':
-    import cPickle
+    import pickle
     with open('../data/embedding_data_robotcar_vidvoo.pkl', 'rb') as f:
-        print 'Reading data...'
-        embedding, images = cPickle.load(f)
-        print 'done'
+        print('Reading data...')
+        embedding, images = pickle.load(f)
+        print('done')
 
     vis_tsne(embedding, images)

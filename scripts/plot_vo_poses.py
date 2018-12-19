@@ -1,5 +1,5 @@
 import set_paths
-import cPickle
+import pickle
 import os.path as osp
 import os
 from torch.utils.data import DataLoader
@@ -95,12 +95,12 @@ for (r, g) in zip(real_pose, gt_pose):
     q_loss.append(q_criterion(r[3:], g[3:]))
 t_loss = np.mean(np.asarray(t_loss))
 q_loss = np.mean(np.asarray(q_loss))
-print 'Median t-Loss = {:f}, Median q-Loss = {:f}'.format(t_loss, q_loss)
+print('Median t-Loss = {:f}, Median q-Loss = {:f}'.format(t_loss, q_loss))
 
 if train:
-    print 'Visualizing TRAIN data'
+    print('Visualizing TRAIN data')
 else:
-    print 'Visualizing VAL data'
+    print('Visualizing VAL data')
 
 plt.show(block=True)
 if args.output_dir is not None:
@@ -109,9 +109,9 @@ if args.output_dir is not None:
     image_filename = osp.join(osp.expanduser(args.output_dir),
                               '{:s}.png'.format(experiment_name))
     fig.savefig(image_filename)
-    print '{:s} saved'.format(image_filename)
+    print('{:s} saved'.format(image_filename))
     result_filename = osp.join(osp.expanduser(args.output_dir),
                                '{:s}.pkl'.format(experiment_name))
     with open(result_filename, 'wb') as f:
-        cPickle.dump({'targ_poses': gt_pose, 'pred_poses': real_pose}, f)
-    print '{:s} written'.format(result_filename)
+        pickle.dump({'targ_poses': gt_pose, 'pred_poses': real_pose}, f)
+    print('{:s} written'.format(result_filename))

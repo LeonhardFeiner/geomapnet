@@ -1,7 +1,7 @@
 from common.pose_utils import process_poses
 import pickle
 import sys
-from utils import load_image
+from .utils import load_image
 from torch.utils import data
 import numpy as np
 import os.path as osp
@@ -82,7 +82,7 @@ class SevenScenes(data.Dataset):
                 # vo_stats[seq]['R'] = np.eye(3)
                 # vo_stats[seq]['t'] = np.zeros(3)
             else:
-                frame_idx = np.array(xrange(len(p_filenames)), dtype=np.int)
+                frame_idx = np.array(range(len(p_filenames)), dtype=np.int)
                 pss = [np.loadtxt(osp.join(seq_dir, 'frame-{:06d}.pose.txt'.
                                            format(i))).flatten()[:12] for i in frame_idx]
                 ps[seq] = np.asarray(pss)
@@ -185,8 +185,8 @@ def main():
     ])
     dset = SevenScenes(seq, '../data/deepslam_data/7Scenes', True, transform,
                        mode=mode)
-    print 'Loaded 7Scenes sequence {:s}, length = {:d}'.format(seq,
-                                                               len(dset))
+    print('Loaded 7Scenes sequence {:s}, length = {:d}'.format(seq,
+                                                               len(dset)))
 
     data_loader = data.DataLoader(dset, batch_size=10, shuffle=True,
                                   num_workers=num_workers)
@@ -194,7 +194,7 @@ def main():
     batch_count = 0
     N = 2
     for batch in data_loader:
-        print 'Minibatch {:d}'.format(batch_count)
+        print('Minibatch {:d}'.format(batch_count))
         if mode < 2:
             show_batch(make_grid(batch[0], nrow=1, padding=25, normalize=True))
         elif mode == 2:

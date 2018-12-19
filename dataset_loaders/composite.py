@@ -43,13 +43,13 @@ class MF(data.Dataset):
         self.no_duplicates = no_duplicates
 
         if dataset == '7Scenes':
-            from seven_scenes import SevenScenes
+            from .seven_scenes import SevenScenes
             self.dset = SevenScenes(*args, real=self.real, **kwargs)
             if self.include_vos and self.real:
                 self.gt_dset = SevenScenes(*args, skip_images=True, real=False,
                                            **kwargs)
         elif dataset == 'RobotCar':
-            from robotcar import RobotCar
+            from .robotcar import RobotCar
             self.dset = RobotCar(*args, real=self.real, **kwargs)
             if self.include_vos and self.real:
                 self.gt_dset = RobotCar(*args, skip_images=True, real=False,
@@ -143,11 +143,11 @@ class OnlyPoses(data.Dataset):
     def __init__(self, dataset, *args, **kwargs):
         kwargs = dict(kwargs, skip_images=True)
         if dataset == '7Scenes':
-            from seven_scenes import SevenScenes
+            from .seven_scenes import SevenScenes
             self.real_dset = SevenScenes(*args, real=True, **kwargs)
             self.gt_dset = SevenScenes(*args, real=False, **kwargs)
         elif dataset == 'RobotCar':
-            from robotcar import RobotCar
+            from .robotcar import RobotCar
             self.real_dset = RobotCar(*args, real=True, **kwargs)
             self.gt_dset = RobotCar(*args, real=False, **kwargs)
         else:

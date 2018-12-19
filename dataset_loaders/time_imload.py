@@ -15,9 +15,9 @@ setup += 'und_im_filename = "/media/TB/test.png";'
 t = timeit.Timer(stmt='utils.load_image(und_im_filename)', setup=setup)
 times = t.repeat(repeat=repeat, number=number)
 times = np.asarray(times)
-print 'Normal image load'
-print 'Times = ', times
-print 'min = {:8.7f} seconds'.format(np.min(times))
+print('Normal image load')
+print('Times = ', times)
+print('min = {:8.7f} seconds'.format(np.min(times)))
 
 setup = ''
 setup += 'from robotcar_sdk.image import load_image;'
@@ -27,13 +27,13 @@ setup += 'raw_im_filename = "/media/TB/deepslam_data/RobotCar/overcast/2015-08-1
 t = timeit.Timer(stmt='load_image(raw_im_filename)', setup=setup)
 times = t.repeat(repeat=repeat, number=number)
 times = np.asarray(times)
-print 'Demosaic image load'
-print 'Times = ', times
-print 'min = {:8.7f} seconds'.format(np.min(times))
+print('Demosaic image load')
+print('Times = ', times)
+print('min = {:8.7f} seconds'.format(np.min(times)))
 
 t = timeit.Timer(stmt='load_image(raw_im_filename, model=c)', setup=setup)
 times = t.repeat(repeat=repeat, number=number)
 times = np.asarray(times)
-print 'Demosaic + undistort image load'
-print 'Times = ', times
-print 'min = {:8.7f} seconds'.format(np.min(times))
+print('Demosaic + undistort image load')
+print('Times = ', times)
+print('min = {:8.7f} seconds'.format(np.min(times)))

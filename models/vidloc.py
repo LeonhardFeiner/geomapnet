@@ -47,7 +47,7 @@ class VidLoc(nn.Module):
         # initialize the LSTM
         # "An Empirical Exploration of Recurrent Network Architectures" -
         # JMLR, Jozefowicz et al
-        for layer in xrange(n_layers):
+        for layer in range(n_layers):
             for connection in ['ih', 'hh']:
                 for suffix in ['', '_reverse']:
                     bias_name = 'bias_{:s}_l{:d}{:s}'.format(
@@ -56,7 +56,7 @@ class VidLoc(nn.Module):
                     N = b.size(0)
                     init.constant(b[N / 4: (N / 2) + 1], 1)
 
-        for layer in xrange(n_layers):
+        for layer in range(n_layers):
             for connection in ['ih', 'hh']:
                 for lstm in [self.lstm_xyz, self.lstm_wpqr]:
                     bias_name = 'bias_{:s}_l{:d}'.format(connection, layer)

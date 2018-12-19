@@ -1,4 +1,4 @@
-import cPickle
+import pickle
 from torchvision import transforms, models
 from torch.utils.data import DataLoader
 import torch.cuda
@@ -90,9 +90,9 @@ if osp.isfile(weights_filename):
     def loc_func(storage, loc): return storage
     checkpoint = torch.load(weights_filename, map_location=loc_func)
     load_state_dict(model, checkpoint['model_state_dict'])
-    print 'Loaded weights from {:s}'.format(weights_filename)
+    print('Loaded weights from {:s}'.format(weights_filename))
 else:
-    print 'Could not load weights from {:s}'.format(weights_filename)
+    print('Could not load weights from {:s}'.format(weights_filename))
     sys.exit(-1)
 
 data_dir = osp.join('..', 'data', args.dataset)
@@ -112,9 +112,9 @@ pose_m, pose_s = np.loadtxt(pose_stats_file)  # mean and stdev
 # dataset
 train = not args.val
 if train:
-    print 'Running {:s} on TRAIN data'.format(args.model)
+    print('Running {:s} on TRAIN data'.format(args.model))
 else:
-    print 'Running {:s} on VAL data'.format(args.model)
+    print('Running {:s} on VAL data'.format(args.model))
 data_dir = osp.join('..', 'data', 'deepslam_data', args.dataset)
 kwargs = dict(scene=args.scene, data_path=data_dir, train=train,
               transform=data_transform, target_transform=target_transform, seed=seed)
@@ -157,7 +157,7 @@ targ_poses = np.zeros((L, 7))  # store all target poses
 # inference loop
 for batch_idx, (data, target) in enumerate(loader):
     if batch_idx % 200 == 0:
-        print 'Image {:d} / {:d}'.format(batch_idx, len(loader))
+        print('Image {:d} / {:d}'.format(batch_idx, len(loader)))
 
     # indices into the global arrays storing poses
     if (args.model.find('vid') >= 0) or args.pose_graph:
@@ -208,9 +208,9 @@ q_loss = np.asarray([q_criterion(p, t) for p, t in zip(pred_poses[:, 3:],
 #q_loss = eval_func(q_loss)
 #print '{:s} error in translation = {:3.2f} m\n' \
 #      '{:s} error in rotation    = {:3.2f} degrees'.format(eval_str, t_loss,
-print 'Error in translation: median {:3.2f} m,  mean {:3.2f} m\n' \
+print('Error in translation: median {:3.2f} m,  mean {:3.2f} m\n' \
     'Error in rotation: median {:3.2f} degrees, mean {:3.2f} degree'.format(np.median(t_loss), np.mean(t_loss),
-                                                                            np.median(q_loss), np.mean(q_loss))
+                                                                            np.median(q_loss), np.mean(q_loss)))
 
 
 # create figure object
@@ -252,9 +252,9 @@ if args.output_dir is not None:
     image_filename = osp.join(osp.expanduser(args.output_dir),
                               '{:s}.png'.format(experiment_name))
     fig.savefig(image_filename)
-    print '{:s} saved'.format(image_filename)
+    print('{:s} saved'.format(image_filename))
     result_filename = osp.join(osp.expanduser(args.output_dir), '{:s}.pkl'.
                                format(experiment_name))
     with open(result_filename, 'wb') as f:
-        cPickle.dump({'targ_poses': targ_poses, 'pred_poses': pred_poses}, f)
-    print '{:s} written'.format(result_filename)
+        pickle.dump({'targ_poses': targ_poses, 'pred_poses': pred_poses}, f)
+    print('{:s} written'.format(result_filename))

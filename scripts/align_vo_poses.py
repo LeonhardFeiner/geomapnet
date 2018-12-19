@@ -51,7 +51,7 @@ if args.dataset == '7Scenes':
     p_filenames = [n for n in os.listdir(osp.join(seq_dir, '.')) if
                    n.find('pose') >= 0]
     gt_poses = [np.loadtxt(osp.join(seq_dir, 'frame-{:06d}.pose.txt'.
-                                    format(i))).flatten()[:12] for i in xrange(len(p_filenames))]
+                                    format(i))).flatten()[:12] for i in range(len(p_filenames))]
     gt_poses = np.asarray(gt_poses)
 elif args.dataset == 'RobotCar':
     seq_dir = osp.join(data_dir, args.scene, args.seq)
@@ -73,7 +73,7 @@ elif args.dataset == 'RobotCar':
     gt_poses = np.asarray(gt_poses)
     gt_poses = np.reshape(gt_poses[:, :3, :], (len(gt_poses), -1))
     assert len(real_poses) == len(gt_poses) - 1
-    frame_idx = range(1, len(gt_poses))
+    frame_idx = list(range(1, len(gt_poses)))
 else:
     raise NotImplementedError
 
@@ -105,7 +105,7 @@ else:
 vo_stats = {'R': align_R, 't': align_t, 's': align_s}
 with open(vo_stats_filename, 'wb') as f:
     pickle.dump(vo_stats, f)
-print '{:s} saved.'.format(vo_stats_filename)
+print('{:s} saved.'.format(vo_stats_filename))
 
 # apply alignment
 pose_stats_filename = osp.join(data_dir, args.scene, 'pose_stats.txt')
@@ -131,4 +131,4 @@ if args.output is None:
 else:
     filename = osp.expanduser(args.output)
     fig.savefig(filename)
-    print '{:s} saved'.format(filename)
+    print('{:s} saved'.format(filename))

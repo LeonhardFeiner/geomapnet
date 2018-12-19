@@ -30,8 +30,8 @@ voq = txq.qmult(txq.qinverse(qv1), qv2)
 vot = txq.rotate_vector(v=tv2 - tv1, q=txq.qinverse(qv1))
 vot = txq.rotate_vector(v=vot, q=qp1)
 
-print 'translation'
-print np.allclose(tp1 + vot, tp2)
+print('translation')
+print(np.allclose(tp1 + vot, tp2))
 
-print 'rotation'
-print np.allclose(txq.qmult(qp1, voq), qp2)
+print('rotation')
+print(np.allclose(txq.qmult(qp1, voq), qp2))

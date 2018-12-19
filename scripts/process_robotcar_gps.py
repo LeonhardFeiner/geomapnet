@@ -44,4 +44,4 @@ with open(gps_file, 'r') as fin, open(out_file, 'w') as fout:
         outrow.append(inrow[11])  # utm_zone
         outrow.extend([0, 0, 0, 0, 0, 0])
         writer.writerow(outrow)
-print '{:s} written'.format(out_file)
+print('{:s} written'.format(out_file))
