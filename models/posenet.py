@@ -64,9 +64,9 @@ class PoseNet(nn.Module):
 
         for m in init_modules:
             if isinstance(m, nn.Conv2d) or isinstance(m, nn.Linear):
-                nn.init.kaiming_normal(m.weight.data)
+                nn.init.kaiming_normal_(m.weight.data)
                 if m.bias is not None:
-                    nn.init.constant(m.bias.data, 0)
+                    nn.init.constant_(m.bias.data, 0)
 
     def forward(self, x):
         x = self.feature_extractor(x)

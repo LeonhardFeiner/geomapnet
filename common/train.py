@@ -363,7 +363,7 @@ def step_feedfwd(data, model, cuda, target=None, criterion=None, optim=None,
             optim.learner.zero_grad()
             loss.backward()
             if max_grad_norm > 0.0:
-                torch.nn.utils.clip_grad_norm(
+                torch.nn.utils.clip_grad_norm_(
                     model.parameters(), max_grad_norm)
             optim.learner.step()
 
