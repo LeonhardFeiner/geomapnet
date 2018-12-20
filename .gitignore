@@ -123,6 +123,6 @@ dmypy.json
 
 #
 /data
-/scripts/logs/
+/scripts/logs
 
 .nfs*
