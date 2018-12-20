@@ -1,4 +1,4 @@
-from . import set_paths
+import set_paths
 from common.train import safe_collate
 from torch.utils.data import DataLoader
 from torchvision import transforms
