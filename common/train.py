@@ -348,33 +348,33 @@ def step_feedfwd(data, model, cuda, target=None, criterion=None, optim=None,
     """
     if train:
         assert criterion is not None
+    with torch.set_grad_enabled(train):
 
-    data_var = Variable(data, volatile=(not train), requires_grad=train)
-    if cuda:
-        data_var = data_var.cuda(async=True)
-    output = model(data_var)
-
-    if criterion is not None:
+        data_var = Variable(data, requires_grad=train)
         if cuda:
-            target = target.cuda(async=True)
+            data_var = data_var.cuda(async=True)
+        output = model(data_var)
 
-        target_var = Variable(
-            target, volatile=(
-                not train), requires_grad=False)
-        loss = criterion(output, target_var)
+        if criterion is not None:
+            if cuda:
+                target = target.cuda(async=True)
 
-        if train:
-            # SGD step
-            optim.learner.zero_grad()
-            loss.backward()
-            if max_grad_norm > 0.0:
-                torch.nn.utils.clip_grad_norm_(
-                    model.parameters(), max_grad_norm)
-            optim.learner.step()
+            target_var = Variable(
+                target, requires_grad=False)
+            loss = criterion(output, target_var)
 
-        return loss.data[0], output
-    else:
-        return 0, output
+            if train:
+                # SGD step
+                optim.learner.zero_grad()
+                loss.backward()
+                if max_grad_norm > 0.0:
+                    torch.nn.utils.clip_grad_norm_(
+                        model.parameters(), max_grad_norm)
+                optim.learner.step()
+
+            return loss.data[0], output
+        else:
+            return 0, output
 
 
 def step_lstm(data, model, cuda, target=None, criterion=None, optim=None,
