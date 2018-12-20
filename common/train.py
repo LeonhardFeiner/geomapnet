@@ -171,6 +171,11 @@ class Trainer(object):
                 if resume_optim:
                     self.optimizer.learner.load_state_dict(
                         checkpoint['optim_state_dict'])
+                    if self.config['cuda']:
+                        for state in optimizer.learner.state.values():
+                            for k, v in state.items():
+                                if isinstance(v, torch.Tensor):
+                                     state[k] = v.cuda()
                     self.start_epoch = checkpoint['epoch']
                     if 'criterion_state_dict' in checkpoint:
                         c_state = checkpoint['criterion_state_dict']
