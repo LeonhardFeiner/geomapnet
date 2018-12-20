@@ -1,3 +1,4 @@
+from __future__ import division
 import pickle
 from torchvision import transforms, models
 from torch.utils.data import DataLoader
@@ -164,7 +165,7 @@ for batch_idx, (data, target) in enumerate(loader):
         idx = data_set.get_indices(batch_idx)
     else:
         idx = [batch_idx]
-    idx = idx[len(idx) / 2]
+    idx = idx[len(idx) // 2]
 
     # output : 1 x 6 or 1 x STEPS x 6
     _, output = step_feedfwd(data, model, CUDA, train=False)
@@ -194,8 +195,8 @@ for batch_idx, (data, target) in enumerate(loader):
     target[:, :3] = (target[:, :3] * pose_s) + pose_m
 
     # take the middle prediction
-    pred_poses[idx, :] = output[len(output) / 2]
-    targ_poses[idx, :] = target[len(target) / 2]
+    pred_poses[idx, :] = output[len(output) // 2]
+    targ_poses[idx, :] = target[len(target) // 2]
 
 # calculate losses
 t_loss = np.asarray([t_criterion(p, t) for p, t in zip(pred_poses[:, :3],
