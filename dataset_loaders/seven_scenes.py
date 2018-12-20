@@ -1,7 +1,6 @@
 from common.pose_utils import process_poses
-import pickle
 import sys
-from .utils import load_image
+from .utils import load_image, load_pickle
 from torch.utils import data
 import numpy as np
 import os.path as osp
@@ -77,7 +76,7 @@ class SevenScenes(data.Dataset):
                 vo_stats_filename = osp.join(seq_data_dir,
                                              '{:s}_vo_stats.pkl'.format(vo_lib))
                 with open(vo_stats_filename, 'rb') as f:
-                    vo_stats[seq] = pickle.load(f)
+                    vo_stats[seq] = load_pickle(f)
                 # # uncomment to check that PGO does not need aligned VO!
                 # vo_stats[seq]['R'] = np.eye(3)
                 # vo_stats[seq]['t'] = np.zeros(3)

@@ -9,8 +9,9 @@ import sys
 class Logger(object):
     def __init__(self, filename="Default.log"):
         self.terminal = sys.stdout
-        bufsize = 0
-        self.log = open(filename, "w", bufsize)
+        #bufsize = 0
+        #self.log = open(filename, "w", bufsize)
+        self.log = open(filename, "w")
 
     def delink(self):
         self.log.close()

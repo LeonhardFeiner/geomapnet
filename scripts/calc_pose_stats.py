@@ -1,8 +1,7 @@
 import set_paths
 import os.path as osp
 import argparse
-from dataset_loaders.robotcar import RobotCar
-from dataset_loaders.seven_scenes import SevenScenes
+
 
 """
 Copyright (C) 2018 NVIDIA Corporation.  All rights reserved.
@@ -28,8 +27,10 @@ data_dir = osp.join('..', 'data', 'deepslam_data', args.dataset)
 kwargs = dict(scene=args.scene, data_path=data_dir, train=True, real=False,
               skip_images=True, seed=7)
 if args.dataset == '7Scenes':
+    from dataset_loaders.seven_scenes import SevenScenes
     dset = SevenScenes(**kwargs)
 elif args.dataset == 'RobotCar':
+    from dataset_loaders.robotcar import RobotCar
     dset = RobotCar(**kwargs)
 else:
     raise NotImplementedError

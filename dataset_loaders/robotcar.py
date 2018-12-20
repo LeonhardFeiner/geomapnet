@@ -11,9 +11,9 @@ from robotcar_sdk.interpolate_poses import interpolate_vo_poses,\
 from robotcar_sdk.camera_model import CameraModel
 from robotcar_sdk.image import load_image
 from . import utils
+from .utils import load_pickle
 from functools import partial
 from common.pose_utils import process_poses
-import pickle
 
 
 class RobotCar(data.Dataset):
@@ -80,7 +80,7 @@ class RobotCar(data.Dataset):
                 vo_stats_filename = osp.join(seq_data_dir, '{:s}_vo_stats.pkl'.
                                              format(vo_lib))
                 with open(vo_stats_filename, 'r') as f:
-                    vo_stats[seq] = pickle.load(f)
+                    vo_stats[seq] = load_pickle(vo_stats_filename)
                 ps[seq] = np.reshape(p[:, :3, :], (len(p), -1))
             else:  # GT poses
                 pose_filename = osp.join(seq_dir, 'gps', 'ins.csv')

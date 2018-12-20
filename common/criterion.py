@@ -1,3 +1,4 @@
+from __future__ import division
 from torch import nn
 import torch
 from common import pose_utils
@@ -151,7 +152,7 @@ class MapNetOnlineCriterion(nn.Module):
         :return:
         """
         s = pred.size()
-        T = s[1] / 2
+        T = s[1] // 2
         pred_abs = pred[:, :T, :].contiguous()
         # these contain abs pose predictions for now
         pred_vos = pred[:, T:, :].contiguous()

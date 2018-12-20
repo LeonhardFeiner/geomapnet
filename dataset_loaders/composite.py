@@ -1,9 +1,11 @@
+from __future__ import division
 from common.pose_utils import calc_vos_simple, calc_vos_safe
 import sys
 import numpy as np
 from torch.autograd import Variable
 from torch.utils import data
 import torch
+
 """
 Copyright (C) 2018 NVIDIA Corporation.  All rights reserved.
 Licensed under the CC BY-NC-SA 4.0 license (https://creativecommons.org/licenses/by-nc-sa/4.0/legalcode).
@@ -66,9 +68,9 @@ class MF(data.Dataset):
         else:
             skips = self.skip * np.ones(self.steps - 1)
         offsets = np.insert(skips, 0, 0).cumsum()
-        offsets -= offsets[len(offsets) / 2]
+        offsets -= offsets[len(offsets) // 2]
         if self.no_duplicates:
-            offsets += self.steps / 2 * self.skip
+            offsets += self.steps // 2 * self.skip
         offsets = offsets.astype(np.int)
         idx = index + offsets
         idx = np.minimum(np.maximum(idx, 0), len(self.dset) - 1)
