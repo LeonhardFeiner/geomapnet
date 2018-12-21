@@ -262,9 +262,9 @@ class Trainer(object):
 
                 if self.config['log_visdom']:
                     val_loss_avg = val_loss.avg.data.cpu().numpy()
-                    self.vis.updateTrace(X=np.asarray([epoch]),
-                                         Y=np.asarray([val_loss_avg]), win=self.loss_win, name='val_loss',
-                                         append=True, env=self.vis_env)
+                    self.vis.line(X=np.asarray([epoch]),
+                                  Y=np.asarray([val_loss_avg]), win=self.loss_win, name='val_loss',
+                                  update='append', env=self.vis_env)
                     self.vis.save(envs=[self.vis_env])
 
             # SAVE CHECKPOINT
@@ -276,8 +276,8 @@ class Trainer(object):
             # ADJUST LR
             lr = self.optimizer.adjust_lr(epoch)
             if self.config['log_visdom']:
-                self.vis.updateTrace(X=np.asarray([epoch]), Y=np.asarray([np.log10(lr)]),
-                                     win=self.lr_win, name='learning_rate', append=True, env=self.vis_env)
+                self.vis.line(X=np.asarray([epoch]), Y=np.asarray([np.log10(lr)]),
+                              win=self.lr_win, name='learning_rate', update='append', env=self.vis_env)
 
             # TRAIN
             self.model.train()
@@ -313,15 +313,15 @@ class Trainer(object):
                                train_batch_time.avg, loss, lr))
                     if self.config['log_visdom']:
                         loss = loss.data.cpu().numpy()
-                        self.vis.updateTrace(X=np.asarray([epoch_count]),
-                                             Y=np.asarray([loss]), win=self.loss_win, name='train_loss',
-                                             append=True, env=self.vis_env)
+                        self.vis.line(X=np.asarray([epoch_count]),
+                                      Y=np.asarray([loss]), win=self.loss_win, name='train_loss',
+                                      update='append', env=self.vis_env)
                         if self.n_criterion_params:
                             for name, v in self.train_criterion.named_parameters():
                                 v = v.data.cpu().numpy()[0]
-                                self.vis.updateTrace(X=np.asarray([epoch_count]), Y=np.asarray([v]),
-                                                     win=self.criterion_param_win, name=name,
-                                                     append=True, env=self.vis_env)
+                                self.vis.line(X=np.asarray([epoch_count]), Y=np.asarray([v]),
+                                              win=self.criterion_param_win, name=name,
+                                              update='append', env=self.vis_env)
                         self.vis.save(envs=[self.vis_env])
 
                 end = time.time()
