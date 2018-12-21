@@ -261,8 +261,9 @@ class Trainer(object):
                                                                    epoch, val_loss.avg))
 
                 if self.config['log_visdom']:
+                    val_loss_avg = val_loss.avg.data.cpu().numpy()
                     self.vis.updateTrace(X=np.asarray([epoch]),
-                                         Y=np.asarray([val_loss.avg]), win=self.loss_win, name='val_loss',
+                                         Y=np.asarray([val_loss_avg]), win=self.loss_win, name='val_loss',
                                          append=True, env=self.vis_env)
                     self.vis.save(envs=[self.vis_env])
 
@@ -311,6 +312,7 @@ class Trainer(object):
                                train_data_time.val, train_data_time.avg, train_batch_time.val,
                                train_batch_time.avg, loss, lr))
                     if self.config['log_visdom']:
+                        loss = loss.data.cpu().numpy()
                         self.vis.updateTrace(X=np.asarray([epoch_count]),
                                              Y=np.asarray([loss]), win=self.loss_win, name='train_loss',
                                              append=True, env=self.vis_env)
