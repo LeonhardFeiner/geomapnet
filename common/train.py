@@ -401,40 +401,40 @@ def step_lstm(data, model, cuda, target=None, criterion=None, optim=None,
     if train:
         assert criterion is not None
 
-    data_var = Variable(data, volatile=(not train), requires_grad=train)
+    with torch.set_grad_enabled(train):
 
-    loss_accum = 0
-    b_start = np.random.randint(N % B + 1)
-    for b in range(N / B):
-        b_idx = b_start + torch.LongTensor(range(b * B, (b + 1) * B))
-        xb = torch.index_select(data_var, dim=0, index=Variable(b_idx))
-        if target is not None:
-            tb = torch.index_select(
-                target, dim=0, index=Variable(b_idx).cuda())
-        model.reset_hidden_states(B)
-        g_start = np.random.randint(T % G + 1)
-        for g in range(T / G):
-            g_idx = g_start + torch.LongTensor(range(g * G, (g + 1) * G))
-            xg = torch.index_select(xb, dim=1, index=Variable(g_idx))
+        data_var = Variable(data, requires_grad=train)
+
+        loss_accum = 0
+        b_start = np.random.randint(N % B + 1)
+        for b in range(N / B):
+            b_idx = b_start + torch.LongTensor(range(b * B, (b + 1) * B))
+            xb = torch.index_select(data_var, dim=0, index=Variable(b_idx))
             if target is not None:
-                tg = torch.index_select(
-                    tb, dim=1, index=Variable(g_idx).cuda())
-            model.detach_hidden_states()
-            output = model(xg, cuda=cuda, async=True)
+                tb = torch.index_select(
+                    target, dim=0, index=Variable(b_idx).cuda())
+            model.reset_hidden_states(B)
+            g_start = np.random.randint(T % G + 1)
+            for g in range(T / G):
+                g_idx = g_start + torch.LongTensor(range(g * G, (g + 1) * G))
+                xg = torch.index_select(xb, dim=1, index=Variable(g_idx))
+                if target is not None:
+                    tg = torch.index_select(
+                        tb, dim=1, index=Variable(g_idx).cuda())
+                model.detach_hidden_states()
+                output = model(xg, cuda=cuda, async=True)
 
-            if criterion is not None:
-                if cuda:
-                    tg = tg.cuda(async=True)
-                tg_var = Variable(
-                    tg, volatile=(
-                        not train), requires_grad=False)
-                loss = criterion(output, tg_var)
-                loss_accum += loss.data[0]
+                if criterion is not None:
+                    if cuda:
+                        tg = tg.cuda(async=True)
+                    tg_var = Variable(tg, requires_grad=False)
+                    loss = criterion(output, tg_var)
+                    loss_accum += loss.data[0]
 
-                if train:
-                    # SGD step
-                    optim.learner.zero_grad()
-                    loss.backward()
-                    optim.learner.step()
+                    if train:
+                        # SGD step
+                        optim.learner.zero_grad()
+                        loss.backward()
+                        optim.learner.step()
 
-    return loss_accum, output
+        return loss_accum, output
