@@ -15,7 +15,7 @@ dependencies:
 - pytorch
 - torchvision
 - matplotlib
+- visdom
 - pip:
   - colour-demosaicing
   - transforms3d
-  - visdom
