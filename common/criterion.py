@@ -39,8 +39,8 @@ class PoseNetCriterion(nn.Module):
         super(PoseNetCriterion, self).__init__()
         self.t_loss_fn = t_loss_fn
         self.q_loss_fn = q_loss_fn
-        self.sax = nn.Parameter(torch.Tensor([sax]), requires_grad=learn_beta)
-        self.saq = nn.Parameter(torch.Tensor([saq]), requires_grad=learn_beta)
+        self.sax = nn.Parameter(torch.tensor(sax, dtype=torch.float), requires_grad=learn_beta)
+        self.saq = nn.Parameter(torch.tensor(saq, dtype=torch.float), requires_grad=learn_beta)
 
     def forward(self, pred, targ):
         """
@@ -72,10 +72,10 @@ class MapNetCriterion(nn.Module):
         super(MapNetCriterion, self).__init__()
         self.t_loss_fn = t_loss_fn
         self.q_loss_fn = q_loss_fn
-        self.sax = nn.Parameter(torch.Tensor([sax]), requires_grad=learn_beta)
-        self.saq = nn.Parameter(torch.Tensor([saq]), requires_grad=learn_beta)
-        self.srx = nn.Parameter(torch.Tensor([srx]), requires_grad=learn_gamma)
-        self.srq = nn.Parameter(torch.Tensor([srq]), requires_grad=learn_gamma)
+        self.sax = nn.Parameter(torch.tensor(sax, dtype=torch.float), requires_grad=learn_beta)
+        self.saq = nn.Parameter(torch.tensor(saq, dtype=torch.float), requires_grad=learn_beta)
+        self.srx = nn.Parameter(torch.tensor(srx, dtype=torch.float), requires_grad=learn_gamma)
+        self.srq = nn.Parameter(torch.tensor(srq, dtype=torch.float), requires_grad=learn_gamma)
 
     def forward(self, pred, targ):
         """
@@ -133,10 +133,10 @@ class MapNetOnlineCriterion(nn.Module):
         super(MapNetOnlineCriterion, self).__init__()
         self.t_loss_fn = t_loss_fn
         self.q_loss_fn = q_loss_fn
-        self.sax = nn.Parameter(torch.Tensor([sax]), requires_grad=learn_beta)
-        self.saq = nn.Parameter(torch.Tensor([saq]), requires_grad=learn_beta)
-        self.srx = nn.Parameter(torch.Tensor([srx]), requires_grad=learn_gamma)
-        self.srq = nn.Parameter(torch.Tensor([srq]), requires_grad=learn_gamma)
+        self.sax = nn.Parameter(torch.tensor(sax, dtype=torch.float), requires_grad=learn_beta)
+        self.saq = nn.Parameter(torch.tensor(saq, dtype=torch.float), requires_grad=learn_beta)
+        self.srx = nn.Parameter(torch.tensor(srx, dtype=torch.float), requires_grad=learn_gamma)
+        self.srq = nn.Parameter(torch.tensor(srq, dtype=torch.float), requires_grad=learn_gamma)
         self.gps_mode = gps_mode
 
     def forward(self, pred, targ):

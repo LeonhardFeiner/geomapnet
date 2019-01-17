@@ -132,7 +132,7 @@ class Trainer(object):
             self.vis.line(X=np.zeros(1), Y=np.zeros(1), win=self.lr_win,
                           opts={'legend': ['learning_rate'], 'xlabel': 'epochs',
                                 'ylabel': 'log(lr)'}, env=self.vis_env)
-            criterion_params = {k: v.data.cpu().numpy()[0] for k, v in
+            criterion_params = {k: v.data.cpu().numpy() for k, v in
                                 self.train_criterion.named_parameters()}
             self.n_criterion_params = len(criterion_params)
             if self.n_criterion_params:
@@ -318,7 +318,7 @@ class Trainer(object):
                                       update='append', env=self.vis_env)
                         if self.n_criterion_params:
                             for name, v in self.train_criterion.named_parameters():
-                                v = v.data.cpu().numpy()[0]
+                                v = v.data.cpu().numpy()
                                 self.vis.line(X=np.asarray([epoch_count]), Y=np.asarray([v]),
                                               win=self.criterion_param_win, name=name,
                                               update='append', env=self.vis_env)
@@ -374,7 +374,7 @@ def step_feedfwd(data, model, cuda, target=None, criterion=None, optim=None,
                         model.parameters(), max_grad_norm)
                 optim.learner.step()
 
-            return loss.data[0], output
+            return loss.data, output
         else:
             return 0, output
 
@@ -431,7 +431,7 @@ def step_lstm(data, model, cuda, target=None, criterion=None, optim=None,
                         tg = tg.cuda(async=True)
                     tg_var = Variable(tg, requires_grad=False)
                     loss = criterion(output, tg_var)
-                    loss_accum += loss.data[0]
+                    loss_accum += loss.data
 
                     if train:
                         # SGD step
