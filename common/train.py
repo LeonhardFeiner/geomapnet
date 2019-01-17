@@ -132,7 +132,7 @@ class Trainer(object):
             self.vis.line(X=np.zeros(1), Y=np.zeros(1), win=self.lr_win,
                           opts={'legend': ['learning_rate'], 'xlabel': 'epochs',
                                 'ylabel': 'log(lr)'}, env=self.vis_env)
-            criterion_params = {k: v.data.cpu().numpy() for k, v in
+            criterion_params = {k: v.item() for k, v in
                                 self.train_criterion.named_parameters()}
             self.n_criterion_params = len(criterion_params)
             if self.n_criterion_params:
@@ -261,7 +261,7 @@ class Trainer(object):
                                                                    epoch, val_loss.avg))
 
                 if self.config['log_visdom']:
-                    val_loss_avg = val_loss.avg.data.cpu().numpy()
+                    val_loss_avg = val_loss.avg
                     self.vis.line(X=np.asarray([epoch]),
                                   Y=np.asarray([val_loss_avg]), win=self.loss_win, name='val_loss',
                                   update='append', env=self.vis_env)
@@ -312,13 +312,12 @@ class Trainer(object):
                                train_data_time.val, train_data_time.avg, train_batch_time.val,
                                train_batch_time.avg, loss, lr))
                     if self.config['log_visdom']:
-                        loss = loss.data.cpu().numpy()
                         self.vis.line(X=np.asarray([epoch_count]),
                                       Y=np.asarray([loss]), win=self.loss_win, name='train_loss',
                                       update='append', env=self.vis_env)
                         if self.n_criterion_params:
                             for name, v in self.train_criterion.named_parameters():
-                                v = v.data.cpu().numpy()
+                                v = v.item()
                                 self.vis.line(X=np.asarray([epoch_count]), Y=np.asarray([v]),
                                               win=self.criterion_param_win, name=name,
                                               update='append', env=self.vis_env)
