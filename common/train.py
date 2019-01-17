@@ -374,7 +374,7 @@ def step_feedfwd(data, model, cuda, target=None, criterion=None, optim=None,
                         model.parameters(), max_grad_norm)
                 optim.learner.step()
 
-            return loss.data, output
+            return loss.item(), output
         else:
             return 0, output
 
@@ -431,7 +431,7 @@ def step_lstm(data, model, cuda, target=None, criterion=None, optim=None,
                         tg = tg.cuda(async=True)
                     tg_var = Variable(tg, requires_grad=False)
                     loss = criterion(output, tg_var)
-                    loss_accum += loss.data
+                    loss_accum += loss.item()
 
                     if train:
                         # SGD step

@@ -5,6 +5,7 @@ import torch.nn.init
 import torch.nn.functional as F
 import torch.nn as nn
 import torch
+import numpy as np
 """
 Copyright (C) 2018 NVIDIA Corporation.  All rights reserved.
 Licensed under the CC BY-NC-SA 4.0 license (https://creativecommons.org/licenses/by-nc-sa/4.0/legalcode).
@@ -13,7 +14,6 @@ Licensed under the CC BY-NC-SA 4.0 license (https://creativecommons.org/licenses
 """
 implementation of PoseNet and MapNet networks
 """
-#from IPython.core.debugger import set_trace
 
 os.environ['TORCH_MODEL_ZOO'] = os.path.join('..', 'data', 'models')
 
@@ -72,12 +72,11 @@ class PoseNet(nn.Module):
         x = self.feature_extractor(x)
         x = F.relu(x)
         if self.droprate > 0:
-            x = F.dropout(x, p=self.droprate, training=self.training)
+            x = F.dropout(x, p=self.droprate)
 
         xyz = self.fc_xyz(x)
         wpqr = self.fc_wpqr(x)
         return torch.cat((xyz, wpqr), 1)
-
 
 class MapNet(nn.Module):
     """
