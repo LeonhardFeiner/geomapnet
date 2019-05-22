@@ -14,7 +14,7 @@ Licensed under the CC BY-NC-SA 4.0 license (https://creativecommons.org/licenses
 <b> This documentation was modified by Leonhard Feiner and Alexander Ziller. </b>
 
 ## Documentation 
-
+### Original Results
 The original CVPR 2018 paper can be found at
 
 [Samarth Brahmbhatt, Jinwei Gu, Kihwan Kim, James Hays, and Jan Kautz. Geometry-Aware Learning of Maps for Camera Localization. CVPR 2018.](https://arxiv.org/abs/1712.03342).
@@ -22,12 +22,17 @@ The original CVPR 2018 paper can be found at
 Video to original result: \
 [![mapnet](./figures/mapnet.png)](https://www.youtube.com/watch?v=X6mF_IbOb4A)
 
-
-## Modifications to NVIDIA repository
+### Our Results
+#### Modifications to NVIDIA repository
 Modifications by Leonhard Feiner and Alexander Ziller: 
  - Support for DeepLoc dataset
  - Development of Dual-Input model (additional semantics as input to model)
  - Development of Multitask model (additional semantics as output to model)
+#### Documentation of our results
+- [Project Proposal](documentation/proposal/abstract.pdf)
+- [Project Report](documentation/report/report.pdf)
+- [Project Poster](documentation/poster.pdf)
+
 
 ## Setup
 
