@@ -9,6 +9,7 @@ dependencies:
 - configparser
 - ipython
 - numpy
+- pandas
 - pip
 - python=2.7
 - scikit-learn

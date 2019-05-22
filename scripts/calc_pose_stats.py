@@ -15,20 +15,28 @@ script to calculate pose translation stats (run first for every dataset)
 # config
 parser = argparse.ArgumentParser(
     description='Calculate pose translation stats')
-parser.add_argument('--dataset', type=str, choices=('7Scenes', 'RobotCar'),
+parser.add_argument('--dataset', type=str, choices=('7Scenes', 'DeepLoc', 'RobotCar'),
                     help='Dataset')
-parser.add_argument('--scene', type=str, help='Scene name')
+parser.add_argument('--scene', type=str, default='', help='Scene name')
 args = parser.parse_args()
 data_dir = osp.join('..', 'data', 'deepslam_data', args.dataset)
 
 # dataset loader
 # creating the dataset with train=True and real=False saves the stats from the
 # training split
-kwargs = dict(scene=args.scene, data_path=data_dir, train=True, real=False,
-              skip_images=True, seed=7)
+kwargs = dict(scene=args.scene, data_path=data_dir, train=True, real=False, seed=7)
+
+if args.dataset == 'DeepLoc':
+    kwargs['input_types'] = []
+else:
+    kwargs['skip_images'] = True
+
 if args.dataset == '7Scenes':
     from dataset_loaders.seven_scenes import SevenScenes
     dset = SevenScenes(**kwargs)
+elif args.dataset == 'DeepLoc':
+    from dataset_loaders.deeploc import DeepLoc
+    dset = DeepLoc(**kwargs)
 elif args.dataset == 'RobotCar':
     from dataset_loaders.robotcar import RobotCar
     dset = RobotCar(**kwargs)

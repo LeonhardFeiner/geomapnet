@@ -388,6 +388,37 @@ def process_poses(poses_in, mean_t, std_t, align_R, align_t, align_s):
     return poses_out
 
 
+def process_poses_quaternion(xyz_in, q_in, mean_t, std_t, align_R, align_t, align_s):
+    """
+    processes the 1x12 raw pose from dataset by aligning and then normalizing
+    :param poses_in: N x 12
+    :param mean_t: 3
+    :param std_t: 3
+    :param align_R: 3 x 3
+    :param align_t: 3
+    :param align_s: 1
+    :return: processed poses (translation + quaternion) N x 7
+    """
+    poses_out = np.zeros((len(xyz_in), 6))
+    poses_out[:, 0:3] = xyz_in
+    align_q = txq.mat2quat(align_R)
+    
+    # align
+    for i in range(len(poses_out)):
+        q = txq.qmult(align_q, q_in[i])
+        q *= np.sign(q[0])  # constrain to hemisphere
+        q = qlog(q)
+        poses_out[i, 3:] = q
+        t = poses_out[i, :3] - align_t
+        poses_out[i, :3] = align_s * \
+            np.dot(align_R, t[:, np.newaxis]).squeeze()
+
+    # normalize translation
+    poses_out[:, :3] -= mean_t
+    poses_out[:, :3] /= std_t
+    return poses_out
+
+
 def log_quaternion_angular_error(q1, q2):
     return quaternion_angular_error(qexp(q1), qexp(q2))
 

@@ -23,7 +23,8 @@ and saves that information
 # config
 parser = argparse.ArgumentParser(description='Align VO poses to ground truth')
 parser.add_argument('--dataset', type=str, choices=('7Scenes',
-                                                    'RobotCar'), help='Dataset')
+                                                    'RobotCar',
+                                                    'DeepLoc'), help='Dataset')
 parser.add_argument('--vo_lib', type=str, choices=('dso', 'stereo', 'gps'),
                     required=True)
 parser.add_argument('--scene', type=str, help='Scene name')
@@ -31,7 +32,7 @@ parser.add_argument('--output', type=str, default=None,
                     help='Output image filename')
 parser.add_argument('--subsample', type=int, default=10,
                     help='subsample factor for visualization')
-parser.add_argument('--seq', type=str,
+parser.add_argument('--seq', type=str, default='',
                     help='sequence identifier e.g. 1, 2, etc for 7Scenes or 2014-06-26-08-53-56 '
                     'for Robotcar')
 args = parser.parse_args()
@@ -53,6 +54,21 @@ if args.dataset == '7Scenes':
     gt_poses = [np.loadtxt(osp.join(seq_dir, 'frame-{:06d}.pose.txt'.
                                     format(i))).flatten()[:12] for i in range(len(p_filenames))]
     gt_poses = np.asarray(gt_poses)
+    
+elif args.dataset == 'DeepLoc':
+    assert args.vo_lib == 'dso'
+    real_pose_filename = osp.join(aux_data_dir, args.scene,
+                                '{:s}_poses'.format(args.vo_lib),
+                                'seq-{:02d}.txt'.format(int(args.seq)))
+    real_poses = np.loadtxt(real_pose_filename)
+    frame_idx, real_poses = real_poses[:, 0].astype(int), real_poses[:, 1:13]
+    seq_dir = osp.join(data_dir, args.scene, 'seq-{:02d}'.format(int(args.seq)))
+    p_filenames = [n for n in os.listdir(osp.join(seq_dir, '.')) if
+                   n.find('pose') >= 0]
+    gt_poses = [np.loadtxt(osp.join(seq_dir, 'frame-{:06d}.pose.txt'.
+        format(i))).flatten()[:12] for i in xrange(len(p_filenames))]
+    gt_poses = np.asarray(gt_poses)
+    
 elif args.dataset == 'RobotCar':
     seq_dir = osp.join(data_dir, args.scene, args.seq)
     ts_filename = osp.join(seq_dir, 'stereo.timestamps')

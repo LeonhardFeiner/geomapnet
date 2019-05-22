@@ -5,8 +5,6 @@ Licensed under the CC BY-NC-SA 4.0 license (https://creativecommons.org/licenses
 
 import set_paths
 from models.posenet import PoseNet
-from dataset_loaders.seven_scenes import SevenScenes
-from dataset_loaders.robotcar import RobotCar
 from common.train import load_state_dict
 import argparse
 import os
@@ -23,9 +21,9 @@ import matplotlib.pyplot as plt
 
 # config
 parser = argparse.ArgumentParser(description='Activation visualization script')
-parser.add_argument('--dataset', type=str, choices=('7Scenes', 'RobotCar'),
+parser.add_argument('--dataset', type=str, choices=('7Scenes', 'DeepLoc', 'RobotCar'),
                     help='Dataset')
-parser.add_argument('--scene', type=str, help='Scene name')
+parser.add_argument('--scene', type=str, default='', help='Scene name')
 parser.add_argument('--weights', type=str, help='trained weights to load')
 parser.add_argument('--config_file', type=str,
                     help='configuration file used for training')
@@ -80,8 +78,13 @@ data_dir = osp.join('..', 'data', 'deepslam_data', args.dataset)
 kwargs = dict(sequence=args.scene, data_path=data_dir, train=train,
               transform=data_transform, target_transform=target_transform, seed=seed)
 if args.dataset == '7Scenes':
+    from dataset_loaders.seven_scenes import SevenScenes
     data_set = SevenScenes(**kwargs)
+elif args.dataset == 'DeepLoc':
+    from dataset_loaders.deeploc import DeepLoc
+    data_set = DeepLoc(**kwargs)
 elif args.dataset == 'RobotCar':
+    from dataset_loaders.robotcar import RobotCar
     data_set = RobotCar(**kwargs)
 else:
     raise NotImplementedError

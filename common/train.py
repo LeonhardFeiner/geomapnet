@@ -85,10 +85,10 @@ class Trainer(object):
         """
         self.model = model
         self.train_criterion = train_criterion
-        if val_criterion is None:
-            self.val_criterion = self.train_criterion
-        else:
-            self.val_criterion = val_criterion
+        #if val_criterion is None:
+        #    self.val_criterion = self.train_criterion
+        #else:
+        self.extra_criterion = val_criterion
         self.experiment = experiment
         self.optimizer = optimizer
         if 'CUDA_VISIBLE_DEVICES' not in os.environ:
@@ -128,6 +128,11 @@ class Trainer(object):
             self.vis.line(X=np.zeros((1, 2)), Y=np.zeros((1, 2)), win=self.loss_win,
                           opts={'legend': ['train_loss', 'val_loss'], 'xlabel': 'epochs',
                                 'ylabel': 'loss'}, env=self.vis_env)
+            if self.extra_criterion:
+                self.extra_loss_win = 'extra_' + self.loss_win
+                self.vis.line(X=np.zeros((1, 2)), Y=np.zeros((1, 2)), win=self.extra_loss_win,
+                          opts={'legend': ['train_extra_loss', 'val_extra_loss'], 'xlabel': 'epochs',
+                                'ylabel': 'loss'}, env=self.vis_env) 
             self.lr_win = 'lr_win'
             self.vis.line(X=np.zeros(1), Y=np.zeros(1), win=self.lr_win,
                           opts={'legend': ['learning_rate'], 'xlabel': 'epochs',
@@ -203,7 +208,8 @@ class Trainer(object):
         if self.config['cuda']:
             self.model.cuda()
             self.train_criterion.cuda()
-            self.val_criterion.cuda()
+            if self.extra_criterion:
+                self.extra_criterion.cuda()
 
     def save_checkpoint(self, epoch):
         filename = osp.join(self.logdir, 'epoch_{:03d}.pth.tar'.format(epoch))
@@ -213,60 +219,101 @@ class Trainer(object):
              'criterion_state_dict': self.train_criterion.state_dict()}
         torch.save(checkpoint_dict, filename)
 
-    def train_val(self, lstm):
+    def train_val(self, lstm, dual_target=None):
         """
         Function that does the training and validation
         :param lstm: whether the model is an LSTM
         :return:
         """
+        #print("Dual target in train_val: %r"%dual_target)
         for epoch in range(self.start_epoch, self.config['n_epochs']):
             # VALIDATION
             if self.config['do_val'] and ((epoch % self.config['val_freq'] == 0) or
                                           (epoch == self.config['n_epochs'] - 1)):
                 val_batch_time = Logger.AverageMeter()
                 val_loss = Logger.AverageMeter()
+                if self.extra_criterion:
+                    val_extra_loss = Logger.AverageMeter()
                 self.model.eval()
                 end = time.time()
                 val_data_time = Logger.AverageMeter()
                 for batch_idx, (data, target) in enumerate(self.val_loader):
                     val_data_time.update(time.time() - end)
+                    #print(target[1].size())
+                    #a = 1.0/0.0
 
-                    kwargs = dict(target=target, criterion=self.val_criterion,
+                    kwargs = dict(target=target, criterion=self.train_criterion,
                                   optim=self.optimizer, train=False)
                     if lstm:
-                        loss, _ = step_lstm(
+                        loss, output = step_lstm(
                             data, self.model, self.config['cuda'], **kwargs)
                     else:
-                        loss, _ = step_feedfwd(data, self.model, self.config['cuda'],
+                        loss, output = step_feedfwd(data, self.model, self.config['cuda'],
                                                **kwargs)
 
                     val_loss.update(loss)
                     val_batch_time.update(time.time() - end)
+                    
+                    if self.extra_criterion:
+                        dual_target = type(target) is list or type(target) is tuple
+                        with torch.set_grad_enabled(False):
+                            if self.config['cuda']:
+                                if dual_target:
+                                    target = tuple(single_target.cuda(async=True) for single_target in target)
+                                else:
+                                    target = target.cuda(async=True)
 
-                    if batch_idx % self.config['print_freq'] == 0:
-                        print('Val {:s}: Epoch {:d}\t' \
+                            if dual_target:
+                                target_var = tuple(Variable(t, requires_grad=False) for t in target)
+                            else:
+                                target_var = Variable(target, requires_grad=False)
+
+                            extra_loss = self.extra_criterion(output, target_var)
+                            extra_loss = extra_loss.item()
+                            val_extra_loss.update(extra_loss)   
+
+                    if batch_idx % self.config['print_freq'] == 0:                        
+                        print_string = 'Val {:s}: Epoch {:d}\t' \
                               'Batch {:d}/{:d}\t' \
-                              'Data time {:.4f} ({:.4f})\t' \
-                              'Batch time {:.4f} ({:.4f})\t' \
-                              'Loss {:f}' \
+                              'Data Time {:.4f} ({:.4f})\t' \
+                              'Batch Time {:.4f} ({:.4f})\t' \
+                              'Loss {:f}\t' \
                             .format(self.experiment, epoch, batch_idx, len(self.val_loader) - 1,
-                                    val_data_time.val, val_data_time.avg, val_batch_time.val,
-                                    val_batch_time.avg, loss))
+                                   val_data_time.val, val_data_time.avg, val_batch_time.val,
+                                   val_batch_time.avg, loss)
+                    
+                        if self.extra_criterion: 
+                            print_string += 'Loss Extra Scale {:f}\t'.format(extra_loss)
+
+                        print(print_string)
+                        
                         if self.config['log_visdom']:
                             self.vis.save(envs=[self.vis_env])
 
                     end = time.time()
 
-                print('Val {:s}: Epoch {:d}, val_loss {:f}'.format(self.experiment,
-                                                                   epoch, val_loss.avg))
+                print_string = 'Val {:s}: Epoch {:d}, val_loss {:f}' \
+                    .format(self.experiment, epoch, val_loss.avg)
+                
+                if self.extra_criterion: 
+                    print_string += ' val_extra_loss {:f}\t'.format(val_extra_loss.avg)
+                    
+                print(print_string)
 
                 if self.config['log_visdom']:
                     val_loss_avg = val_loss.avg
                     self.vis.line(X=np.asarray([epoch]),
                                   Y=np.asarray([val_loss_avg]), win=self.loss_win, name='val_loss',
                                   update='append', env=self.vis_env)
+                    
+                    if self.extra_criterion:
+                        val_extra_loss_avg = val_extra_loss.avg
+                        self.vis.line(X=np.asarray([epoch]),
+                                      Y=np.asarray([val_extra_loss_avg]), win=self.extra_loss_win, name='val_extra_loss',
+                                      update='append', env=self.vis_env)
+                    
                     self.vis.save(envs=[self.vis_env])
-
+                    
             # SAVE CHECKPOINT
             if epoch % self.config['snapshot'] == 0:
                 self.save_checkpoint(epoch)
@@ -284,37 +331,71 @@ class Trainer(object):
             train_data_time = Logger.AverageMeter()
             train_batch_time = Logger.AverageMeter()
             end = time.time()
+
             for batch_idx, (data, target) in enumerate(self.train_loader):
                 train_data_time.update(time.time() - end)
+                #print(target[1].size())
 
                 kwargs = dict(target=target, criterion=self.train_criterion,
                               optim=self.optimizer, train=True,
                               max_grad_norm=self.config['max_grad_norm'])
                 if lstm:
-                    loss, _ = step_lstm(
+                    loss, output = step_lstm(
                         data, self.model, self.config['cuda'], **kwargs)
                 else:
-                    loss, _ = step_feedfwd(data, self.model, self.config['cuda'],
+                    loss, output = step_feedfwd(data, self.model, self.config['cuda'],
                                            **kwargs)
 
+                if self.extra_criterion:  
+                    dual_target = type(target) is list or type(target) is tuple
+                    with torch.set_grad_enabled(False):
+                        if self.config['cuda']:
+                            if dual_target:
+                                target = tuple(single_target.cuda(async=True) for single_target in target)
+                            else:
+                                target = target.cuda(async=True)
+
+                        if dual_target:
+                            target_var = tuple(Variable(t, requires_grad=False) for t in target)
+                        else:
+                            target_var = Variable(target, requires_grad=False)
+
+                        extra_loss = self.extra_criterion(output, target_var)
+                        extra_loss = extra_loss.item()
+                    
                 train_batch_time.update(time.time() - end)
 
                 if batch_idx % self.config['print_freq'] == 0:
                     n_iter = epoch * len(self.train_loader) + batch_idx
                     epoch_count = float(n_iter) / len(self.train_loader)
-                    print('Train {:s}: Epoch {:d}\t' \
+                    
+                    print_string = 'Train {:s}: Epoch {:d}\t' \
                           'Batch {:d}/{:d}\t' \
                           'Data Time {:.4f} ({:.4f})\t' \
                           'Batch Time {:.4f} ({:.4f})\t' \
                           'Loss {:f}\t' \
-                          'lr: {:f}'.\
-                        format(self.experiment, epoch, batch_idx, len(self.train_loader) - 1,
+                        .format(self.experiment, epoch, batch_idx, len(self.train_loader) - 1,
                                train_data_time.val, train_data_time.avg, train_batch_time.val,
-                               train_batch_time.avg, loss, lr))
+                               train_batch_time.avg, loss)
+                    
+                    if self.extra_criterion: 
+                        print_string += 'Loss Extra Scale {:f}\t'.format(extra_loss)
+                    
+                    print_string += 'lr: {:f}'.format(lr)
+                    print(print_string)
+
+                    end = time.time()
+                    
+                    
                     if self.config['log_visdom']:
                         self.vis.line(X=np.asarray([epoch_count]),
                                       Y=np.asarray([loss]), win=self.loss_win, name='train_loss',
                                       update='append', env=self.vis_env)
+                        if self.extra_criterion:    
+                            self.vis.line(X=np.asarray([epoch_count]),
+                                          Y=np.asarray([extra_loss]), win=self.extra_loss_win, name='train_extra_loss',
+                                          update='append', env=self.vis_env)                            
+                            
                         if self.n_criterion_params:
                             for name, v in self.train_criterion.named_parameters():
                                 v = v.item()
@@ -334,7 +415,7 @@ class Trainer(object):
 
 
 def step_feedfwd(data, model, cuda, target=None, criterion=None, optim=None,
-                 train=True, max_grad_norm=0.0):
+                 train=True, max_grad_norm=0.0, activation_maps=False):
     """
     training/validation step for a feedforward NN
     :param data:
@@ -349,6 +430,7 @@ def step_feedfwd(data, model, cuda, target=None, criterion=None, optim=None,
     """
     if train:
         assert criterion is not None
+        
     with torch.set_grad_enabled(train):
 
         data_var = Variable(data, requires_grad=train)
@@ -357,13 +439,23 @@ def step_feedfwd(data, model, cuda, target=None, criterion=None, optim=None,
         output = model(data_var)
 
         if criterion is not None:
+            dual_target = type(target) is list or type(target) is tuple
             if cuda:
-                target = target.cuda(async=True)
+                if dual_target:
+                    target = tuple(single_target.cuda(async=True) for single_target in target)
+                else:
+                    target = target.cuda(async=True)
 
-            target_var = Variable(
-                target, requires_grad=False)
+            if dual_target:
+                target_var = tuple(Variable(t, requires_grad=False) for t in target)
+            else:
+                target_var = Variable(target, requires_grad=False)
+
             loss = criterion(output, target_var)
 
+            if activation_maps:
+                return loss, output
+            
             if train:
                 # SGD step
                 optim.learner.zero_grad()

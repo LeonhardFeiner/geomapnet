@@ -23,11 +23,12 @@ script to plot the poses from integration of VO against GT poses for debugging
 parser = argparse.ArgumentParser(
     description='Plot VO poses and calculate error')
 parser.add_argument('--dataset', type=str, choices=('7Scenes',
+                                                    'DeepLoc'
                                                     'RobotCar'), help='Dataset')
 parser.add_argument('--vo_lib', type=str, choices=('orbslam', 'libviso2', 'dso',
                                                    'gps', 'stereo'),
                     help='VO library to use', required=True)
-parser.add_argument('--scene', type=str, help='Scene name')
+parser.add_argument('--scene', type=str, default='',help='Scene name')
 parser.add_argument('--val', action='store_true', help='Plot graph for val')
 parser.add_argument('--output_dir', type=str, default=None,
                     help='Output directory')

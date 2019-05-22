@@ -56,6 +56,12 @@ class MF(data.Dataset):
             if self.include_vos and self.real:
                 self.gt_dset = RobotCar(*args, skip_images=True, real=False,
                                         **kwargs)
+        elif dataset == 'DeepLoc':
+            from dataset_loaders.deeploc import DeepLoc
+            self.dset = DeepLoc(*args, 
+                                real=self.real, **kwargs)
+            if self.include_vos and self.real:
+                self.gt_dset = DeepLoc(*args, skip_images=True, real=False, **kwargs)
         else:
             raise NotImplementedError
 
@@ -88,8 +94,20 @@ class MF(data.Dataset):
         idx = self.get_indices(index)
         clip = [self.dset[i] for i in idx]
 
-        imgs = torch.stack([c[0] for c in clip], dim=0)
-        poses = torch.stack([c[1] for c in clip], dim=0)
+        img_list, output_tuple_list = zip(*clip)
+        imgs = torch.stack(img_list, dim=0)
+
+        if type(output_tuple_list[0]) == tuple or type(output_tuple_list[0]) == list:
+            if self.include_vos:
+                print("Warning: include_vos has no effect because of multioutput")
+                
+            output_list_tuple = zip(*output_tuple_list)
+            stacked_outputs = tuple(torch.stack(output_list, dim=0) for output_list in output_list_tuple)
+            return imgs, stacked_outputs
+    
+        else:
+            poses = torch.stack(list(output_tuple_list), dim=0)
+
         if self.include_vos:
             # vos = calc_vos_simple(poses.unsqueeze(0))[0] if self.train else \
             #   calc_vos_safe(poses.unsqueeze(0))[0]
@@ -148,6 +166,10 @@ class OnlyPoses(data.Dataset):
             from .seven_scenes import SevenScenes
             self.real_dset = SevenScenes(*args, real=True, **kwargs)
             self.gt_dset = SevenScenes(*args, real=False, **kwargs)
+        elif dataset == 'DeepLoc':
+            from dataset_loaders.deeploc import DeepLoc
+            self.real_dset = DeepLoc(*args, real=True, **kwargs)
+            self.gt_dset   = DeepLoc(*args, real=False, **kwargs)
         elif dataset == 'RobotCar':
             from .robotcar import RobotCar
             self.real_dset = RobotCar(*args, real=True, **kwargs)

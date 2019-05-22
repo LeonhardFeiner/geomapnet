@@ -2,8 +2,6 @@ import set_paths
 from common.train import safe_collate
 from torch.utils.data import DataLoader
 from torchvision import transforms
-from dataset_loaders.robotcar import RobotCar
-from dataset_loaders.seven_scenes import SevenScenes
 import argparse
 import numpy as np
 import os.path as osp
@@ -17,9 +15,9 @@ Computes the mean and std of pixels in a dataset
 """
 
 parser = argparse.ArgumentParser(description='Dataset images statistics')
-parser.add_argument('--dataset', type=str, choices=('7Scenes', 'RobotCar'),
+parser.add_argument('--dataset', type=str, choices=('7Scenes',  'DeepLoc', 'RobotCar'),
                     help='Dataset', required=True)
-parser.add_argument('--scene', type=str, help='Scene name', required=True)
+parser.add_argument('--scene', type=str, default='', help='Scene name', required=True)
 args = parser.parse_args()
 
 data_dir = osp.join('..', 'data', args.dataset)
@@ -36,8 +34,13 @@ data_dir = osp.join('..', 'data', 'deepslam_data', args.dataset)
 kwargs = dict(scene=args.scene, data_path=data_dir, train=True, real=False,
               transform=data_transform)
 if args.dataset == '7Scenes':
+    from dataset_loaders.seven_scenes import SevenScenes
     dset = SevenScenes(**kwargs)
+elif args.dataset == 'DeepLoc':
+    from dataset_loaders.deeploc import DeepLoc
+    dset = DeepLoc(**kwargs)
 elif args.dataset == 'RobotCar':
+    from dataset_loaders.robotcar import RobotCar
     dset = RobotCar(**kwargs)
 else:
     raise NotImplementedError
